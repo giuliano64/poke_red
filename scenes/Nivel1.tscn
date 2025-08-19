@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://tilesets/ash_room_small_optimized.tres" type="TileSet" id=1]
 
@@ -15,31 +15,19 @@ extents = Vector2( 8, 64 )
 extents = Vector2( 80, 8 )
 
 [sub_resource type="RectangleShape2D" id=5]
-extents = Vector2( 8, 15 )
-
-[sub_resource type="RectangleShape2D" id=6]
-extents = Vector2( 8, 8 )
-
-[sub_resource type="RectangleShape2D" id=7]
-extents = Vector2( 8, 8 )
-
-[sub_resource type="RectangleShape2D" id=8]
-extents = Vector2( 8, 8 )
-
-[sub_resource type="RectangleShape2D" id=9]
-extents = Vector2( 8, 8 )
-
-[sub_resource type="RectangleShape2D" id=10]
-extents = Vector2( 8, 8 )
+extents = Vector2( 27, 10 )
 
 [sub_resource type="RectangleShape2D" id=11]
-extents = Vector2( 7, 7 )
+extents = Vector2( 7, 5 )
 
 [sub_resource type="RectangleShape2D" id=12]
 extents = Vector2( 7, 7 )
 
 [sub_resource type="RectangleShape2D" id=13]
 extents = Vector2( 8, 8 )
+
+[sub_resource type="RectangleShape2D" id=14]
+extents = Vector2( 8, 14 )
 
 [node name="Nivel1" type="Node"]
 
@@ -71,40 +59,8 @@ position = Vector2( 0, 72 )
 shape = SubResource( 4 )
 
 [node name="PC1" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
-position = Vector2( -64, -31 )
+position = Vector2( -45, -19 )
 shape = SubResource( 5 )
-
-[node name="Palm" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
-position = Vector2( 56, 49 )
-shape = SubResource( 5 )
-
-[node name="PC2" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
-position = Vector2( -48, -31 )
-shape = SubResource( 6 )
-
-[node name="PC3" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
-position = Vector2( -32, -31 )
-shape = SubResource( 7 )
-
-[node name="PC4" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
-position = Vector2( -64, -15 )
-shape = SubResource( 8 )
-
-[node name="PC5" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
-position = Vector2( -48, -15 )
-shape = SubResource( 9 )
-
-[node name="PC6" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
-position = Vector2( -32, -15 )
-shape = SubResource( 10 )
-
-[node name="PC7" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
-position = Vector2( -26, -15 )
-shape = SubResource( 10 )
-
-[node name="PC8" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
-position = Vector2( -26, -30 )
-shape = SubResource( 10 )
 
 [node name="TV1" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
 position = Vector2( -9, 25 )
@@ -129,6 +85,10 @@ shape = SubResource( 13 )
 [node name="Bed4" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
 position = Vector2( -43, 43 )
 shape = SubResource( 13 )
+
+[node name="Palm" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
+position = Vector2( 56, 48 )
+shape = SubResource( 14 )
 
 [node name="spawn_player" type="Position2D" parent="." groups=["spawn"]]
 show_behind_parent = true
