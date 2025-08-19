@@ -82,6 +82,8 @@ Ver `utils/README.md` para guía completa.
 - ✅ **TileMap optimizado** con tiles únicos
 - ✅ **Animaciones** del player (4 direcciones)
 - ✅ **Arquitectura modular** (main → game → nivel → player)
+- ✅ **Sistema de colisiones robusto** con límites de habitación
+- ✅ **Snap-to-grid seguro** que previene escapes accidentales
 
 ## ⚠️ Notas Importantes
 
@@ -116,12 +118,31 @@ python3 extract_tileset_config.py           # Optimización
 - **↑↓←→**: Mover player
 - **Grid-based**: Movimiento preciso tile por tile
 
+## 🛡️ Sistema de Colisiones
+
+### Características:
+- **Límites físicos**: 4 paredes invisibles (Top, Left, Right, Bottom)
+- **Detección previa**: Verifica colisión antes de moverse
+- **Snap seguro**: Solo reposiciona si la nueva posición es válida
+- **Recuperación automática**: Nunca queda el player "colgado"
+
+### Ubicación:
+- **TopWall**: Posición (0, -40) - Bloquea salida superior
+- **LeftWall**: Posición (-80, 16) - Bloquea salida izquierda
+- **RightWall**: Posición (80, 16) - Bloquea salida derecha  
+- **BottomWall**: Posición (0, 72) - Bloquea salida inferior
+
+### Mensajes de Debug:
+- `"Colisión detectada [dirección] - player se queda en posición"`
+- `"Player snapped to: (x, y)"` - Snap exitoso
+- `"Snap cancelado - mantener en: (x, y)"` - Snap bloqueado por seguridad
+
 ## 🚀 Próximos Pasos Posibles
 
-- [ ] Implementar colisiones con bordes optimizados
 - [ ] Añadir más niveles usando sistema optimizado  
 - [ ] Sistema de transiciones entre habitaciones
 - [ ] Mecánicas de gameplay (NPCs, objetos, combate)
+- [ ] Colisiones con objetos específicos (muebles, NPCs)
 
 ---
 

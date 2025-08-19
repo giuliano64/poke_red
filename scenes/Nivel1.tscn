@@ -3,16 +3,16 @@
 [ext_resource path="res://tilesets/ash_room_small_optimized.tres" type="TileSet" id=1]
 
 [sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 14.5312, 13 )
+extents = Vector2( 80, 8 )
+
+[sub_resource type="RectangleShape2D" id=2]
+extents = Vector2( 8, 64 )
 
 [sub_resource type="RectangleShape2D" id=3]
-extents = Vector2( 14.125, 10.5156 )
+extents = Vector2( 8, 64 )
 
 [sub_resource type="RectangleShape2D" id=4]
-extents = Vector2( 9, 10 )
-
-[sub_resource type="RectangleShape2D" id=5]
-extents = Vector2( 40, 8 )
+extents = Vector2( 80, 8 )
 
 [node name="Nivel1" type="Node"]
 
@@ -21,27 +21,28 @@ show_behind_parent = true
 position = Vector2( 0, 1 )
 tile_set = ExtResource( 1 )
 cell_size = Vector2( 16, 16 )
+show_collision = true
 format = 1
 tile_data = PoolIntArray( -65540, 0, 0, -65539, 1, 0, -65538, 2, 0, -65537, 3, 0, -131072, 4, 0, -131071, 3, 0, -131070, 4, 0, -131069, 3, 0, -4, 5, 0, -3, 6, 0, -2, 7, 0, -1, 8, 0, -65536, 8, 0, -65535, 8, 0, -65534, 9, 0, -65533, 10, 0, 65532, 13, 0, 65533, 11, 0, 65534, 12, 0, 65535, 13, 0, 0, 13, 0, 1, 13, 0, 2, 13, 0, 3, 13, 0, 131068, 13, 0, 131069, 13, 0, 131070, 14, 0, 131071, 15, 0, 65536, 13, 0, 65537, 13, 0, 65538, 13, 0, 65539, 13, 0, 196604, 18, 0, 196605, 18, 0, 196606, 16, 0, 196607, 17, 0, 131072, 13, 0, 131073, 13, 0, 131074, 20, 0, 131075, 21, 0, 262140, 22, 0, 262141, 22, 0, 262142, 13, 0, 262143, 19, 0, 196608, 13, 0, 196609, 13, 0, 196610, 13, 0, 196611, 23, 0 )
 
 [node name="StaticBody2D" type="StaticBody2D" parent="Nivel"]
 
-[node name="Bed" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
-position = Vector2( -49.4688, 47 )
+[node name="TopWall" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
+position = Vector2( 0, -40 )
 shape = SubResource( 1 )
 
-[node name="table" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
-position = Vector2( -32, -17 )
+[node name="LeftWall" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
+position = Vector2( -80, 16 )
+shape = SubResource( 2 )
+
+[node name="RightWall" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
+position = Vector2( 80, 16 )
 shape = SubResource( 3 )
 
-[node name="PC" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
-position = Vector2( -56, -17 )
+[node name="BottomWall" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
+position = Vector2( 0, 72 )
 shape = SubResource( 4 )
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Nivel/StaticBody2D"]
-position = Vector2( 24, -25 )
-shape = SubResource( 5 )
-one_way_collision_margin = 0.0
 
 [node name="spawn_player" type="Position2D" parent="." groups=["spawn"]]
 show_behind_parent = true
+position = Vector2( 0, 1 )
