@@ -122,15 +122,21 @@ python3 extract_tileset_config.py           # Optimización
 
 ### Características:
 - **Límites físicos**: 4 paredes invisibles (Top, Left, Right, Bottom)
+- **Objetos específicos**: Cama, TV/mueble con colisiones individuales
 - **Detección previa**: Verifica colisión antes de moverse
 - **Snap seguro**: Solo reposiciona si la nueva posición es válida
 - **Recuperación automática**: Nunca queda el player "colgado"
 
-### Ubicación:
+### Límites de Habitación:
 - **TopWall**: Posición (0, -40) - Bloquea salida superior
 - **LeftWall**: Posición (-80, 16) - Bloquea salida izquierda
 - **RightWall**: Posición (80, 16) - Bloquea salida derecha  
 - **BottomWall**: Posición (0, 72) - Bloquea salida inferior
+
+### Objetos con Colisión:
+- **🛏️ Cama (6 tiles)**: Posiciones (-64,-31) a (-32,-15) - Esquina superior izquierda
+- **📺 TV/Mueble (4 tiles)**: Posiciones (32,-31) a (48,-15) - Esquina superior derecha
+- **Total**: 14 CollisionShape2D implementados
 
 ### Mensajes de Debug:
 - `"Colisión detectada [dirección] - player se queda en posición"`
