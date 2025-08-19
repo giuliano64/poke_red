@@ -1,0 +1,10 @@
+# Ignorar archivos temporales y de output
+*.tmp
+*.backup_*
+tile_mapping.txt
+optimization_report.txt
+
+# Ignorar archivos de Python
+__pycache__/
+*.pyc
+*.pyo
