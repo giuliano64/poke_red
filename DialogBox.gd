@@ -1,15 +1,18 @@
 extends Control
 
-export(int) var max_lines_per_page = 2   # Pokémon clásico suele usar 2
+export(int) var min_rows = 2
 export(float) var chars_per_sec = 60.0   # velocidad del efecto typewriter
-# Dimensiones específicas del área jugable de Ash's room
-export(int) var playable_width := 160   # -80 to +80
-export(int) var playable_height := 112  # -40 to +72  
-export(int) var dialog_height := 28     # Altura fija
-export(int) var margin_px := 12         # Margen grande para estar completamente dentro
+export(int) var padding_px = 6
+# Tamaño del área jugable lógica
+export(int) var playable_width = 160
+export(int) var playable_height = 112
+# Altura del cuadro como % del alto jugable
+export(float) var height_ratio = 0.30
+# Margen lateral/inferior
+export(int) var margin_px = 4
 onready var label = $Panel/Text
 onready var next_icon = $Panel/NextIcon
-onready var panel := $Panel
+onready var panel = $Panel
 
 var _pages = []
 var _page_idx = 0
@@ -27,12 +30,12 @@ func _ready():
 	label.valign = Label.VALIGN_TOP
 	# Permitir que funcione cuando el juego está pausado
 	pause_mode = Node.PAUSE_MODE_PROCESS
-	# Auto-layout proporcional al viewport
-	_resize_to_viewport()
-	get_viewport().connect("size_changed", self, "_resize_to_viewport")
+	# Auto-layout basado en área jugable real
+	_resize_to_playable()
+	get_viewport().connect("size_changed", self, "_resize_to_playable")
 
 func show_dialog(full_text: String) -> void:
-	_pages = _paginate_text(full_text)
+	_pages = _paginate_text_exact(full_text)
 	print("=== DEBUG PAGINACION ===")
 	print("Texto completo length: ", full_text.length())
 	print("Número de páginas creadas: ", _pages.size())
@@ -131,7 +134,7 @@ func _paginate_text(full_text: String) -> Array:
 			lines_in_page += 1
 			
 			# Si ya llegamos al máximo de líneas, crear nueva página
-			if lines_in_page >= max_lines_per_page:
+			if lines_in_page >= min_rows:
 				pages.append(current_page.strip_edges())
 				current_page = ""
 				lines_in_page = 0
@@ -177,7 +180,7 @@ func _paginate_text_fallback(full_text: String) -> Array:
 	var word_count = 0
 	
 	for word in words:
-		if word_count >= words_per_line * max_lines_per_page:
+		if word_count >= words_per_line * min_rows:
 			pages.append(current_page.strip_edges())
 			current_page = word
 			word_count = 1
@@ -193,36 +196,109 @@ func _paginate_text_fallback(full_text: String) -> Array:
 	
 	return pages
 
-func _resize_to_viewport():
-	var vs := get_viewport_rect().size
-	
-	# EL CUARTO ESTÁ CENTRADO - USAR EL MÉTODO QUE FUNCIONABA
-	var center_x = vs.x / 2
-	var center_y = vs.y / 2
-	
-	# Área jugable centrada (160x112) 
-	var playable_left = center_x - (playable_width / 2)
-	var playable_top = center_y - (playable_height / 2)
-	
-	# Dimensiones del diálogo
-	var dialog_w = playable_width - (margin_px * 2)
-	var dialog_h = dialog_height
-	
-	# POSICIÓN FIJA AL PIE DEL ÁREA JUGABLE
+func _resize_to_playable():
+	var vr = get_viewport().get_visible_rect()
+	var center = vr.position + vr.size * 0.5
+	var playable_pos = center - Vector2(playable_width, playable_height) * 0.5
+	var playable_rect = Rect2(playable_pos, Vector2(playable_width, playable_height))
+
+	var dialog_h = int(playable_rect.size.y * height_ratio)
+	var dialog_w = int(playable_rect.size.x) - margin_px * 2
+
 	anchor_left = 0
-	anchor_right = 0 
+	anchor_right = 0
 	anchor_top = 0
 	anchor_bottom = 0
-	
-	rect_position.x = playable_left + margin_px
-	rect_position.y = playable_top + playable_height - dialog_h - margin_px
+
+	rect_position = Vector2(
+		playable_rect.position.x + margin_px,
+		playable_rect.position.y + playable_rect.size.y - dialog_h - margin_px
+	)
 	rect_size = Vector2(dialog_w, dialog_h)
-	
-	print("=== DEBUG CENTRADO ===")
-	print("Viewport size: ", vs)
+
+	if panel:
+		panel.anchor_left = 0
+		panel.anchor_top = 0
+		panel.anchor_right = 1
+		panel.anchor_bottom = 1
+		panel.margin_left = 0
+		panel.margin_top = 0
+		panel.margin_right = 0
+		panel.margin_bottom = 0
+
+	print("=== DEBUG PLAYABLE AREA ===")
+	print("Visible rect: ", vr)
+	print("Playable rect: ", playable_rect)
 	print("Dialog position: ", rect_position)
 	print("Dialog size: ", rect_size)
-	print("======================")
+	print("=============================")
+
+func _paginate_text_exact(full_text: String) -> Array:
+	var text_area_size = _get_text_area_size()
+	var fnt = label.get_font("font")
+	var line_h = fnt.get_height()
+	var char_w = max(1, fnt.get_string_size("M").x)
+
+	var cols = int(floor(text_area_size.x / char_w))
+	var rows = max(min_rows, int(floor(text_area_size.y / line_h)))
+	if cols < 4:
+		cols = 4
+
+	var wrapped_lines = _word_wrap_to_cols(full_text, cols)
+
+	var pages = []
+	var i = 0
+	while i < wrapped_lines.size():
+		var page_lines = []
+		for r in range(rows):
+			if i >= wrapped_lines.size():
+				break
+			page_lines.append(wrapped_lines[i])
+			i += 1
+		var page_text = ""
+		for j in range(page_lines.size()):
+			if j > 0:
+				page_text += "\n"
+			page_text += page_lines[j]
+		pages.append(page_text)
+	return pages
+
+func _get_text_area_size() -> Vector2:
+	var size = panel.rect_size
+	return Vector2(
+		max(0, size.x - padding_px * 2),
+		max(0, size.y - padding_px * 2)
+	)
+
+func _word_wrap_to_cols(text: String, cols: int) -> PoolStringArray:
+	var words = text.split(" ")
+	var lines = []
+	var cur = ""
+	for w in words:
+		var test = ""
+		if cur == "":
+			test = w
+		else:
+			test = cur + " " + w
+		if test.length() <= cols:
+			cur = test
+		else:
+			if cur == "":
+				lines.append(w.substr(0, cols))
+				var rest = w.substr(cols, w.length() - cols)
+				while rest.length() > cols:
+					lines.append(rest.substr(0, cols))
+					rest = rest.substr(cols, rest.length() - cols)
+				if rest != "":
+					cur = rest
+				else:
+					cur = ""
+			else:
+				lines.append(cur)
+				cur = w
+	if cur != "":
+		lines.append(cur)
+	return lines
 
 
 
