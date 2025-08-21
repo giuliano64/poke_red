@@ -4,6 +4,7 @@ var vel_actual = Vector2()
 var vel_desp = 16
 var dialog_scene = preload("res://scenes/Dialogo.tscn")
 var current_dialog = null
+var can_interact := true  # supresor contra re-abrir en el mismo apretón
 
 func _ready():
 	$animationPlayer.play("idle_up")
@@ -14,11 +15,16 @@ func _physics_process(delta):
 		return
 		
 	# Manejo de interacciones solo si no hay dialogo activo y el juego no está pausado
-	if current_dialog == null and not get_tree().paused and Input.is_action_just_pressed("tecla_x"):
+	if can_interact and current_dialog == null and not get_tree().paused and Input.is_action_just_pressed("tecla_x"):
 		print("Tecla X presionada - iniciando check_interaction")
 		print("Posición del player: ", global_position)
 		print("Stick rotation: ", $stick/Position.rotation_degrees)
 		check_interaction()
+		can_interact = false  # bloquea re-abrir hasta soltar
+	
+	# cuando el diálogo no está abierto, re-habilitar sólo tras soltar
+	if current_dialog == null and not get_tree().paused and Input.is_action_just_released("tecla_x"):
+		can_interact = true
 	
 	if(!$animationPlayer.is_playing() and current_dialog == null):
 		# Resetear velocidad al inicio de cada frame
@@ -142,11 +148,11 @@ func check_interaction():
 	# Priorizar PC sobre TV si ambos están en rango
 	if pc_distance_min <= 50:
 		print("¡PC detectado!")
-		show_dialog("Has encendido tu PC. Es una máquina poderosa que te permite hacer muchas tareas. Por el momento no ejecutarás nada en la misma, pero sabes que en el futuro podrás usarla para almacenar Pokemon y acceder al sistema de almacenamiento.")
+		show_dialog("Encendiste la PC. Es una máquina increíblemente poderosa que te permitirá gestionar completamente tu equipo Pokemon. En el futuro podrás almacenar todos tus Pokemon capturados aquí. También podrás acceder al sistema de almacenamiento Pokemon que conecta con el Centro Pokemon. Esta será tu herramienta más importante para organizar tu aventura.")
 		interaction_found = true
 	elif tv1_distance_min <= 45 or tv2_distance_min <= 60:
 		print("¡TV/Consola detectada!")
-		show_dialog("Estas jugando a la SNES, disfrutando de algunos clásicos retro. La consola funciona perfectamente y tienes una gran colección de juegos. Pero de momento, decides apagarla y seguir adelante con tu aventura Pokemon, ya va a haber tiempo para juegos retro más tarde.")
+		show_dialog("En la televisión hay un programa muy interesante sobre un joven entrenador que está comenzando su aventura Pokemon. Está explorando diferentes regiones y capturando Pokemon increíbles. Pero mejor sigues tu propio camino hacia la grandeza.")
 		interaction_found = true
 	
 	if interaction_found:
