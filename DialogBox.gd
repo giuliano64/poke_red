@@ -1,23 +1,24 @@
 extends Control
 
-export(int) var max_lines_per_page := 2   # Pokémon clásico suele usar 2
-export(float) var chars_per_sec := 60.0   # velocidad del efecto typewriter
-onready var label := $Panel/Text
-onready var next_icon := $Panel/NextIcon
+export(int) var max_lines_per_page = 2   # Pokémon clásico suele usar 2
+export(float) var chars_per_sec = 60.0   # velocidad del efecto typewriter
+onready var label = $Panel/Text
+onready var next_icon = $Panel/NextIcon
 
-var _pages := []
-var _page_idx := 0
-var _typing := false
-var _type_timer := 0.0
-var _typed_chars := 0
-var _current_text := ""
+var _pages = []
+var _page_idx = 0
+var _typing = false
+var _type_timer = 0.0
+var _typed_chars = 0
+var _current_text = ""
 
 func _ready():
 	hide()
 	if next_icon:
 		next_icon.hide()
-	label.bbcode_enabled = true
-	label.autowrap_mode = RichTextLabel.AUTOWRAP_WORD_SMART
+	# Configuración básica para Label
+	label.autowrap = true
+	label.valign = Label.VALIGN_TOP
 	# Permitir que funcione cuando el juego está pausado
 	pause_mode = Node.PAUSE_MODE_PROCESS
 
@@ -40,7 +41,7 @@ func _show_page(idx: int) -> void:
 	if next_icon:
 		next_icon.hide()
 	_current_text = _pages[idx]
-	label.bbcode_text = _current_text
+	label.text = _current_text
 	# preparar typewriter
 	_typing = true
 	_typed_chars = 0
@@ -52,11 +53,12 @@ func _process(delta: float) -> void:
 	if not _typing:
 		return
 	_type_timer += delta
-	var target := int(_type_timer * chars_per_sec)
+	var target = int(_type_timer * chars_per_sec)
 	if target > _typed_chars:
 		_typed_chars = target
-		label.visible_characters = clamp(_typed_chars, 0, label.get_total_character_count())
-		if label.visible_characters >= label.get_total_character_count():
+		var total_chars = _current_text.length()
+		label.visible_characters = clamp(_typed_chars, 0, total_chars)
+		if label.visible_characters >= total_chars:
 			_typing = false
 			if next_icon:
 				next_icon.show()
@@ -64,45 +66,46 @@ func _process(delta: float) -> void:
 func _input(event):
 	if not visible:
 		return
-	if event.is_action_pressed("ui_accept"):
+	if event.is_action_pressed("ui_accept") or event.is_action_pressed("tecla_c"):
 		if _typing:
 			# Si está escribiendo, completar texto inmediatamente
 			_typing = false
-			label.visible_characters = label.get_total_character_count()
+			label.visible_characters = _current_text.length()
 			if next_icon:
 				next_icon.show()
 		else:
-			# Avanzar a siguiente página
-			_page_idx += 1
-			_show_page(_page_idx)
+			# Verificar si hay más páginas
+			if _page_idx + 1 < _pages.size():
+				# Avanzar a siguiente página
+				_page_idx += 1
+				_show_page(_page_idx)
+			else:
+				# Es la última página, cerrar diálogo
+				hide()
+				get_tree().paused = false
 
 func _paginate_text(full_text: String) -> Array:
 	# Pagina por líneas reales renderizadas con autowrap.
-	var pages := []
-	var words := full_text.split(" ")
-	var working := ""
-	var last_good := ""
-	label.bbcode_text = ""
-	label.visible_characters = -1  # sin recorte, queremos medir
-
-	for w in words:
-		var probe := ""
-		if working == "":
-			probe = w
+	# Paginación simple basada en palabras por línea
+	var pages = []
+	var words = full_text.split(" ")
+	var words_per_line = 5  # Palabras por línea, más conservador
+	var current_page = ""
+	var word_count = 0
+	
+	for word in words:
+		if word_count >= words_per_line * max_lines_per_page:
+			pages.append(current_page.strip_edges())
+			current_page = word
+			word_count = 1
 		else:
-			probe = working + " " + w
-		label.bbcode_text = probe
-		var lines := label.get_line_count()
-		if lines <= max_lines_per_page:
-			working = probe
-			last_good = probe
-		else:
-			pages.append(last_good.strip_edges())
-			working = w
-			last_good = w
-			label.bbcode_text = working
-
-	if working != "":
-		pages.append(working.strip_edges())
-
+			if current_page == "":
+				current_page = word
+			else:
+				current_page += " " + word
+			word_count += 1
+	
+	if current_page != "":
+		pages.append(current_page.strip_edges())
+	
 	return pages

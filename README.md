@@ -154,17 +154,19 @@ python3 extract_tileset_config.py           # Optimización
 
 ### 🔧 Estado Actual
 - **Interacción funcional**: El player puede interactuar con PC y TV
-- **Mensajes específicos**: 
-  - PC: "Has encendido tu PC. Por el momento no ejecutaras nada en la misma."
-  - TV: "Estas jugando a la SNES, pero de momento, decides apagarla..."
-- **Problema pendiente**: Diálogo aparece fuera del área de juego
+- **Sistema de diálogos moderno**: Paginación automática, efecto typewriter, controles X/C
+- **Posicionamiento correcto**: Diálogo aparece centrado dentro del área de juego
+- **Mensajes largos implementados**: Con paginación automática para textos extensos
+- **Problema menor**: Input cíclico ocasional al cerrar con X
 
 Ver `DIALOGS_IMPLEMENTATION.md` para documentación completa.
 
 ## 🚀 Próximos Pasos
 
 - [x] Sistema de interacción básico
-- [ ] **Corregir posicionamiento del diálogo** (dentro del área de juego)
+- [x] **Sistema de diálogos Pokemon Red** (completo con paginación y typewriter)
+- [x] **Posicionamiento correcto del diálogo** (dentro del área de juego)
+- [ ] Optimizar input cíclico en diálogos
 - [ ] Añadir más objetos interactivos
 - [ ] Sistema de transiciones entre habitaciones
 - [ ] Mecánicas de gameplay (NPCs, objetos, combate)

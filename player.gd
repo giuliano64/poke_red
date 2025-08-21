@@ -13,8 +13,8 @@ func _physics_process(delta):
 	if get_tree().paused:
 		return
 		
-	# Manejo de interacciones solo si no hay dialogo activo
-	if current_dialog == null and Input.is_action_just_pressed("tecla_x"):
+	# Manejo de interacciones solo si no hay dialogo activo y el juego no está pausado
+	if current_dialog == null and not get_tree().paused and Input.is_action_just_pressed("tecla_x"):
 		print("Tecla X presionada - iniciando check_interaction")
 		print("Posición del player: ", global_position)
 		print("Stick rotation: ", $stick/Position.rotation_degrees)
