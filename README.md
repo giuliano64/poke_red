@@ -143,12 +143,31 @@ python3 extract_tileset_config.py           # Optimización
 - `"Player snapped to: (x, y)"` - Snap exitoso
 - `"Snap cancelado - mantener en: (x, y)"` - Snap bloqueado por seguridad
 
-## 🚀 Próximos Pasos Posibles
+## 🎮 Sistema de Interacción Implementado
 
-- [ ] Añadir más niveles usando sistema optimizado  
+### ✅ Funcionalidades Completadas
+- **Teclas X y C**: Configuradas para interacción (A/B buttons del Game Boy)
+- **Detección de objetos**: PC y TV/consola con mensajes específicos
+- **Sistema de diálogos**: Funcional con sprite auténtico de Pokemon Red
+- **Pausa del juego**: Durante los diálogos
+- **Fuente Pokemon**: Auténtica del Pokemon Red original
+
+### 🔧 Estado Actual
+- **Interacción funcional**: El player puede interactuar con PC y TV
+- **Mensajes específicos**: 
+  - PC: "Has encendido tu PC. Por el momento no ejecutaras nada en la misma."
+  - TV: "Estas jugando a la SNES, pero de momento, decides apagarla..."
+- **Problema pendiente**: Diálogo aparece fuera del área de juego
+
+Ver `DIALOGS_IMPLEMENTATION.md` para documentación completa.
+
+## 🚀 Próximos Pasos
+
+- [x] Sistema de interacción básico
+- [ ] **Corregir posicionamiento del diálogo** (dentro del área de juego)
+- [ ] Añadir más objetos interactivos
 - [ ] Sistema de transiciones entre habitaciones
 - [ ] Mecánicas de gameplay (NPCs, objetos, combate)
-- [ ] Colisiones con objetos específicos (muebles, NPCs)
 
 ---
 
