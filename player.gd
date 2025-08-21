@@ -9,6 +9,10 @@ func _ready():
 	$animationPlayer.play("idle_up")
 
 func _physics_process(delta):
+	# No procesar input si el juego está pausado (por diálogos)
+	if get_tree().paused:
+		return
+		
 	# Manejo de interacciones solo si no hay dialogo activo
 	if current_dialog == null and Input.is_action_just_pressed("tecla_x"):
 		print("Tecla X presionada - iniciando check_interaction")
@@ -138,11 +142,11 @@ func check_interaction():
 	# Priorizar PC sobre TV si ambos están en rango
 	if pc_distance_min <= 50:
 		print("¡PC detectado!")
-		show_dialog("Has encendido tu PC.\nPor el momento no ejecutaras\nnada en la misma.")
+		show_dialog("Has encendido tu PC. Es una máquina poderosa que te permite hacer muchas tareas. Por el momento no ejecutarás nada en la misma, pero sabes que en el futuro podrás usarla para almacenar Pokemon y acceder al sistema de almacenamiento.")
 		interaction_found = true
 	elif tv1_distance_min <= 45 or tv2_distance_min <= 60:
 		print("¡TV/Consola detectada!")
-		show_dialog("Estas jugando a la SNES,\npero de momento, decides\napagarla y seguir adelante,\nya va a haber tiempo para\njuegos retro...")
+		show_dialog("Estas jugando a la SNES, disfrutando de algunos clásicos retro. La consola funciona perfectamente y tienes una gran colección de juegos. Pero de momento, decides apagarla y seguir adelante con tu aventura Pokemon, ya va a haber tiempo para juegos retro más tarde.")
 		interaction_found = true
 	
 	if interaction_found:
@@ -173,23 +177,18 @@ func is_near_position(pos1: Vector2, pos2: Vector2, threshold: float) -> bool:
 	return pos1.distance_to(pos2) <= threshold
 
 func show_dialog(text: String):
-	print("=== MOSTRANDO DIALOGO SIGUIENDO PATRON DE REFERENCIA ===")
+	print("=== MOSTRANDO DIALOGO CON SISTEMA POKEMON ===")
 	print("Texto: ", text)
 	
-	# Usar el patrón de la solución de referencia
-	var gui = get_tree().get_nodes_in_group("gui")[0]
-	if gui == null:
-		print("ERROR: No se encontró GUI en grupo 'gui'")
-		return
-		
-	var dialogo = gui.get_node("Dialogo")
-	if dialogo == null:
-		print("ERROR: No se encontró nodo Dialogo en GUI")
+	# Acceder al nuevo DialogRoot en CanvasLayer
+	var dialog_root = get_tree().get_root().get_node("main/UI/DialogRoot")
+	if dialog_root == null:
+		print("ERROR: No se encontró DialogRoot")
 		return
 	
-	print("Llamando show_dialog en GUI/Dialogo...")
-	dialogo.show_dialog(text)
-	print("Diálogo mostrado usando patrón de referencia")
+	print("Llamando show_dialog en DialogRoot...")
+	dialog_root.show_dialog(text)
+	print("Diálogo mostrado con sistema Pokemon Red")
 
 func _on_dialog_closed():
 	current_dialog = null
