@@ -1,10 +1,70 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://game.gd" type="Script" id=1]
 [ext_resource path="res://scenes/Nivel1.tscn" type="PackedScene" id=2]
 [ext_resource path="res://scenes/player.tscn" type="PackedScene" id=3]
+[ext_resource path="res://GUI/text.png" type="Texture" id=4]
+[ext_resource path="res://Fonts/Pokemon X and Y.ttf" type="DynamicFontData" id=5]
+[ext_resource path="res://DialogBox.gd" type="Script" id=6]
+
+[sub_resource type="DynamicFont" id=1]
+size = 5
+use_mipmaps = true
+use_filter = true
+extra_spacing_top = -2
+extra_spacing_bottom = -2
+font_data = ExtResource( 5 )
 
 [node name="main" type="Node2D"]
 script = ExtResource( 1 )
 player = ExtResource( 3 )
 nivel1 = ExtResource( 2 )
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="DialogRoot" type="Control" parent="UI"]
+visible = false
+script = ExtResource( 6 )
+
+[node name="Panel" type="NinePatchRect" parent="UI/DialogRoot"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 4.0
+margin_right = -4.0
+margin_bottom = -4.0
+rect_clip_content = true
+texture = ExtResource( 4 )
+region_rect = Rect2( 187.25, 169.984, 318.75, 76.4837 )
+patch_margin_left = 8
+patch_margin_top = 8
+patch_margin_right = 8
+patch_margin_bottom = 8
+
+[node name="Text" type="Label" parent="UI/DialogRoot/Panel"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 6.0
+margin_top = 6.0
+margin_right = -30.0
+margin_bottom = -6.0
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_fonts/font = SubResource( 1 )
+valign = 1
+autowrap = true
+
+[node name="NextIcon" type="Label" parent="UI/DialogRoot/Panel"]
+visible = false
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -20.0
+margin_top = -20.0
+margin_right = -8.0
+margin_bottom = -8.0
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_fonts/font = SubResource( 1 )
+text = "▶"
+align = 1
+valign = 1
