@@ -24,7 +24,7 @@ func set_from_tilemap(tm):
 	# top-left y bottom-right en MUNDO (px)
 	var world_tl = tm.to_global(Vector2(used.position.x * cell.x, used.position.y * cell.y))
 	var world_br = tm.to_global(Vector2((used.position.x + used.size.x) * cell.x,
-	                                    (used.position.y + used.size.y) * cell.y))
+										(used.position.y + used.size.y) * cell.y))
 
 	# transformar a PANTALLA (toma cámara/zoom/viewport)
 	var ct = tm.get_viewport().get_canvas_transform()

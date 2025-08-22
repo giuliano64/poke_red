@@ -1,10 +1,10 @@
 # DialogRoot.gd (Godot 3.5) - Usa SOLO el área jugable real
 extends Control
 
-export(float) var width_ratio  = 0.66    # % del ancho del cuarto
-export(float) var height_ratio = 0.22    # % del alto del cuarto (2 líneas aprox)
+export(float) var width_ratio  = 0.75    # % del ancho del cuarto
+export(float) var height_ratio = 0.28    # % del alto del cuarto (2 líneas aprox)
 export(int)   var margin_px    = 6       # margen lateral dentro del cuarto
-export(int)   var bottom_px    = 6       # separación desde "piso" del cuarto
+export(int)   var bottom_px    = 20      # separación desde "piso" del cuarto
 export(int)   var h_align      = 0       # 0=izq (GB), 1=centro, 2=dcha
 export(int)   var padding_px   = 7       # padding interno
 export(float) var chars_per_sec = 60.0  # velocidad del efecto typewriter
@@ -25,7 +25,7 @@ func _ready():
 	if next_icon:
 		next_icon.hide()
 	# Configuración básica para Label
-	label.autowrap = true
+	label.autowrap = false
 	label.valign = Label.VALIGN_TOP
 	# Permitir que funcione cuando el juego está pausado
 	pause_mode = Node.PAUSE_MODE_PROCESS
@@ -177,7 +177,7 @@ func _advance_or_close():
 			hide()
 			get_tree().paused = false
 
-# PAGINADO FIJO EN EXACTAMENTE 2 LÍNEAS (GODOT 3.5)
+# PAGINADO FIJO EN EXACTAMENTE 3 LÍNEAS (GODOT 3.5)
 func paginate_two_lines(full_text):
 	var area = _get_text_area()
 	var fnt = label.get_font("font")   # DynamicFont/BitmapFont
@@ -185,7 +185,7 @@ func paginate_two_lines(full_text):
 	var char_w = max(1, fnt.get_string_size("M").x)
 
 	var cols = max(4, int(floor(area.x / char_w)))
-	var rows = 2  # ← exactamente 2 líneas por página
+	var rows = 3  # ← exactamente 3 líneas por página
 
 	var wrapped = _wrap_cols(full_text, cols)
 
@@ -194,6 +194,9 @@ func paginate_two_lines(full_text):
 	while i < wrapped.size():
 		var page_text = wrapped[i]
 		i += 1
+		if i < wrapped.size():
+			page_text += "\n" + wrapped[i]
+			i += 1
 		if i < wrapped.size():
 			page_text += "\n" + wrapped[i]
 			i += 1
@@ -234,6 +237,7 @@ func _wrap_cols(t, cols):
 	if cur != "":
 		lines.append(cur)
 	return lines
+
 
 
 
