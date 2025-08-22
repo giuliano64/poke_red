@@ -34,6 +34,9 @@ func _ready():
 	anchor_top  = 0; anchor_bottom = 0
 	refresh_layout()
 	# si no usas autorefresco desde game.gd, podrías conectar aquí size_changed
+	
+	# Actualizar posición cada frame si está visible
+	set_process(true)
 
 func refresh_layout():
 	var rr = Rect2()
@@ -89,6 +92,9 @@ func refresh_layout():
 	print("====================================")
 
 func show_dialog(full_text):
+	# Recalcular posición ANTES de mostrar el diálogo
+	refresh_layout()
+	
 	_pages = paginate_two_lines(full_text)
 	print("=== DEBUG PAGINACION 2 LINEAS ===")
 	print("Texto completo length: ", full_text.length())
@@ -128,6 +134,11 @@ func _show_page(idx: int) -> void:
 	set_process(true)
 
 func _process(delta: float) -> void:
+	# Actualizar posición del diálogo si está visible
+	if visible:
+		refresh_layout()
+	
+	# Efecto typewriter
 	if not _typing:
 		return
 	_type_timer += delta

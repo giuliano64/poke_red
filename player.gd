@@ -100,6 +100,9 @@ func _on_animationPlayer_animation_finished(anim_name):
 		# Posición snapped es segura
 		global_position = snapped_position
 		print("Player snapped to: ", global_position)
+		
+		# Recalcular área jugable cuando el player se mueve
+		_update_play_area()
 	else:
 		# Posición snapped causaría colisión, mantener posición actual
 		global_position = previous_position
@@ -195,6 +198,14 @@ func show_dialog(text: String):
 	print("Llamando show_dialog en DialogRoot...")
 	dialog_root.show_dialog(text)
 	print("Diálogo mostrado con sistema Pokemon Red")
+
+func _update_play_area():
+	# Recalcular PlayArea cuando el player se mueve
+	var game_node = get_tree().get_root().get_node("main")
+	if game_node and game_node.current_tilemap:
+		var play_area = get_tree().get_nodes_in_group("play_area")
+		if play_area.size() > 0:
+			play_area[0].set_from_tilemap(game_node.current_tilemap)
 
 func _on_dialog_closed():
 	current_dialog = null
