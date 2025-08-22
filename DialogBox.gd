@@ -1,15 +1,14 @@
+# DialogRoot.gd (Godot 3.5) - Usa SOLO el área jugable real
 extends Control
 
-export(int) var min_rows = 2
-export(float) var chars_per_sec = 60.0   # velocidad del efecto typewriter
-export(int) var padding_px = 6
-# Tamaño del área jugable lógica
-export(int) var playable_width = 160
-export(int) var playable_height = 112
-# Altura del cuadro como % del alto jugable
-export(float) var height_ratio = 0.30
-# Margen lateral/inferior
-export(int) var margin_px = 4
+export(float) var width_ratio  = 0.66    # % del ancho del cuarto
+export(float) var height_ratio = 0.22    # % del alto del cuarto (2 líneas aprox)
+export(int)   var margin_px    = 6       # margen lateral dentro del cuarto
+export(int)   var bottom_px    = 6       # separación desde "piso" del cuarto
+export(int)   var h_align      = 0       # 0=izq (GB), 1=centro, 2=dcha
+export(int)   var padding_px   = 7       # padding interno
+export(float) var chars_per_sec = 60.0  # velocidad del efecto typewriter
+
 onready var label = $Panel/Text
 onready var next_icon = $Panel/NextIcon
 onready var panel = $Panel
@@ -30,18 +29,75 @@ func _ready():
 	label.valign = Label.VALIGN_TOP
 	# Permitir que funcione cuando el juego está pausado
 	pause_mode = Node.PAUSE_MODE_PROCESS
-	# Auto-layout basado en área jugable real
-	_resize_to_playable()
-	get_viewport().connect("size_changed", self, "_resize_to_playable")
+	# anclas absolutas
+	anchor_left = 0; anchor_right = 0
+	anchor_top  = 0; anchor_bottom = 0
+	refresh_layout()
+	# si no usas autorefresco desde game.gd, podrías conectar aquí size_changed
 
-func show_dialog(full_text: String) -> void:
-	_pages = _paginate_text_exact(full_text)
-	print("=== DEBUG PAGINACION ===")
+func refresh_layout():
+	var rr = Rect2()
+	var have_room = false
+	
+	# Acceder al singleton por grupo
+	var play_area_nodes = get_tree().get_nodes_in_group("play_area")
+	if play_area_nodes.size() > 0:
+		var play_area = play_area_nodes[0]
+		rr = play_area.rect_screen
+		have_room = rr.size != Vector2()
+	
+	# fallback: si por algún motivo no hay room aún, usar visible rect
+	var ref_rect = rr
+	if not have_room:
+		ref_rect = get_viewport().get_visible_rect()
+
+	# dimensiones del cuadro en función del ROOM (no del viewport)
+	var box_w = int(ref_rect.size.x * width_ratio)
+	var box_h = int(ref_rect.size.y * height_ratio)
+
+	# limitar ancho para no tocar paredes
+	var max_w = int(ref_rect.size.x) - margin_px * 2
+	box_w = min(box_w, max_w)
+
+	# posicionar dentro del ROOM (X y Y)
+	var pos_x = 0
+	if h_align == 0:
+		pos_x = ref_rect.position.x + margin_px
+	elif h_align == 1:
+		pos_x = ref_rect.position.x + int((ref_rect.size.x - box_w) / 2)
+	else:
+		pos_x = ref_rect.position.x + ref_rect.size.x - box_w - margin_px
+
+	# OJO: Y anclado al borde INFERIOR del ROOM
+	var pos_y = ref_rect.position.y + ref_rect.size.y - box_h - bottom_px
+
+	rect_position = Vector2(pos_x, pos_y)
+	rect_size     = Vector2(box_w, box_h)
+
+	if panel:
+		panel.anchor_left = 0; panel.anchor_top = 0
+		panel.anchor_right = 1; panel.anchor_bottom = 1
+		panel.margin_left = 0; panel.margin_top = 0
+		panel.margin_right = 0; panel.margin_bottom = 0
+	
+	print("=== DIALOG LAYOUT (AREA JUGABLE) ===")
+	print("PlayArea rect_screen: ", rr)
+	print("Have room: ", have_room)
+	print("Ref rect usado: ", ref_rect)
+	print("Dialog position: ", rect_position)
+	print("Dialog size: ", rect_size)
+	print("====================================")
+
+func show_dialog(full_text):
+	_pages = paginate_two_lines(full_text)
+	print("=== DEBUG PAGINACION 2 LINEAS ===")
 	print("Texto completo length: ", full_text.length())
 	print("Número de páginas creadas: ", _pages.size())
-	for i in range(_pages.size()):
+	var i = 0
+	while i < _pages.size():
 		print("Página ", i, ": '", _pages[i], "'")
-	print("========================")
+		i += 1
+	print("=================================")
 	_page_idx = 0
 	_show_page(_page_idx)
 
@@ -110,168 +166,38 @@ func _advance_or_close():
 			hide()
 			get_tree().paused = false
 
-func _paginate_text(full_text: String) -> Array:
-	# Paginación basada en caracteres por línea y líneas máximas
-	var pages = []
-	var words = full_text.split(" ")
-	var current_page = ""
-	var current_line = ""
-	var lines_in_page = 0
-	var chars_per_line = _estimate_chars_per_line()
-	
-	for word in words:
-		var test_line = current_line
-		if test_line != "":
-			test_line += " "
-		test_line += word
-		
-		# Si la línea se pasa del límite de caracteres
-		if test_line.length() > chars_per_line:
-			# Añadir la línea actual a la página y empezar nueva línea
-			if current_page != "":
-				current_page += "\n"
-			current_page += current_line
-			lines_in_page += 1
-			
-			# Si ya llegamos al máximo de líneas, crear nueva página
-			if lines_in_page >= min_rows:
-				pages.append(current_page.strip_edges())
-				current_page = ""
-				lines_in_page = 0
-			
-			current_line = word  # La palabra que no cabía empieza la nueva línea
-		else:
-			current_line = test_line  # La palabra cabe en la línea actual
-	
-	# Añadir la última línea a la página actual
-	if current_line != "":
-		if current_page != "":
-			current_page += "\n"
-		current_page += current_line
-	
-	# Añadir la última página si tiene contenido
-	if current_page != "":
-		pages.append(current_page.strip_edges())
-	
-	return pages
-
-func _estimate_chars_per_line() -> int:
-	# Calcular caracteres basado en el área jugable menos márgenes
-	var dialog_width = playable_width - (margin_px * 2)  # Ancho total del diálogo
-	var text_width = dialog_width - 16  # Menos márgenes internos del NinePatchRect
-	var font_width_approx = 5  # Ancho por carácter con fuente Pokemon de 8px (más preciso)
-	var chars = int(text_width / font_width_approx)
-	
-	print("=== CHARS PER LINE DEBUG ===")
-	print("Playable width: ", playable_width)
-	print("Dialog width: ", dialog_width)
-	print("Text width: ", text_width) 
-	print("Calculated chars per line: ", chars)
-	print("===========================")
-	
-	return int(max(chars, 20))  # Usar todo el ancho disponible, mínimo 20
-
-func _paginate_text_fallback(full_text: String) -> Array:
-	# Fallback: paginación por palabras (más conservadora)
-	var pages = []
-	var words = full_text.split(" ")
-	var words_per_line = 4  # Más conservador
-	var current_page = ""
-	var word_count = 0
-	
-	for word in words:
-		if word_count >= words_per_line * min_rows:
-			pages.append(current_page.strip_edges())
-			current_page = word
-			word_count = 1
-		else:
-			if current_page == "":
-				current_page = word
-			else:
-				current_page += " " + word
-			word_count += 1
-	
-	if current_page != "":
-		pages.append(current_page.strip_edges())
-	
-	return pages
-
-func _resize_to_playable():
-	var vr = get_viewport().get_visible_rect()
-	var center = vr.position + vr.size * 0.5
-	var playable_pos = center - Vector2(playable_width, playable_height) * 0.5
-	var playable_rect = Rect2(playable_pos, Vector2(playable_width, playable_height))
-
-	var dialog_h = int(playable_rect.size.y * height_ratio)
-	var dialog_w = int(playable_rect.size.x) - margin_px * 2
-
-	anchor_left = 0
-	anchor_right = 0
-	anchor_top = 0
-	anchor_bottom = 0
-
-	rect_position = Vector2(
-		playable_rect.position.x + margin_px,
-		playable_rect.position.y + playable_rect.size.y - dialog_h - margin_px
-	)
-	rect_size = Vector2(dialog_w, dialog_h)
-
-	if panel:
-		panel.anchor_left = 0
-		panel.anchor_top = 0
-		panel.anchor_right = 1
-		panel.anchor_bottom = 1
-		panel.margin_left = 0
-		panel.margin_top = 0
-		panel.margin_right = 0
-		panel.margin_bottom = 0
-
-	print("=== DEBUG PLAYABLE AREA ===")
-	print("Visible rect: ", vr)
-	print("Playable rect: ", playable_rect)
-	print("Dialog position: ", rect_position)
-	print("Dialog size: ", rect_size)
-	print("=============================")
-
-func _paginate_text_exact(full_text: String) -> Array:
-	var text_area_size = _get_text_area_size()
-	var fnt = label.get_font("font")
+# PAGINADO FIJO EN EXACTAMENTE 2 LÍNEAS (GODOT 3.5)
+func paginate_two_lines(full_text):
+	var area = _get_text_area()
+	var fnt = label.get_font("font")   # DynamicFont/BitmapFont
 	var line_h = fnt.get_height()
 	var char_w = max(1, fnt.get_string_size("M").x)
 
-	var cols = int(floor(text_area_size.x / char_w))
-	var rows = max(min_rows, int(floor(text_area_size.y / line_h)))
-	if cols < 4:
-		cols = 4
+	var cols = max(4, int(floor(area.x / char_w)))
+	var rows = 2  # ← exactamente 2 líneas por página
 
-	var wrapped_lines = _word_wrap_to_cols(full_text, cols)
+	var wrapped = _wrap_cols(full_text, cols)
 
 	var pages = []
 	var i = 0
-	while i < wrapped_lines.size():
-		var page_lines = []
-		for r in range(rows):
-			if i >= wrapped_lines.size():
-				break
-			page_lines.append(wrapped_lines[i])
+	while i < wrapped.size():
+		var page_text = wrapped[i]
+		i += 1
+		if i < wrapped.size():
+			page_text += "\n" + wrapped[i]
 			i += 1
-		var page_text = ""
-		for j in range(page_lines.size()):
-			if j > 0:
-				page_text += "\n"
-			page_text += page_lines[j]
 		pages.append(page_text)
 	return pages
 
-func _get_text_area_size() -> Vector2:
-	var size = panel.rect_size
+func _get_text_area():
+	var s = panel.rect_size
 	return Vector2(
-		max(0, size.x - padding_px * 2),
-		max(0, size.y - padding_px * 2)
+		max(0, s.x - padding_px * 2),
+		max(0, s.y - padding_px * 2)
 	)
 
-func _word_wrap_to_cols(text: String, cols: int) -> PoolStringArray:
-	var words = text.split(" ")
+func _wrap_cols(t, cols):
+	var words = t.split(" ")
 	var lines = []
 	var cur = ""
 	for w in words:
@@ -283,19 +209,17 @@ func _word_wrap_to_cols(text: String, cols: int) -> PoolStringArray:
 		if test.length() <= cols:
 			cur = test
 		else:
-			if cur == "":
-				lines.append(w.substr(0, cols))
-				var rest = w.substr(cols, w.length() - cols)
+			if cur != "":
+				lines.append(cur)
+				cur = w
+			else:
+				# palabra más larga que cols → partir
+				var rest = w
 				while rest.length() > cols:
 					lines.append(rest.substr(0, cols))
 					rest = rest.substr(cols, rest.length() - cols)
 				if rest != "":
 					cur = rest
-				else:
-					cur = ""
-			else:
-				lines.append(cur)
-				cur = w
 	if cur != "":
 		lines.append(cur)
 	return lines

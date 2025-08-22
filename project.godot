@@ -14,9 +14,18 @@ config/name="Pokemon Red"
 run/main_scene="res://main.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+PlayArea="*res://PlayArea.gd"
+
 [display]
 
-window/size/fullscreen=true
+window/size/width=240
+window/size/height=240
+window/size/test_width=240
+window/size/test_height=240
+window/stretch/mode="2d"
+window/stretch/aspect="expand"
 
 [gui]
 
